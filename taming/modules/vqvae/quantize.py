@@ -5,7 +5,7 @@ import numpy as np
 from torch import einsum
 from einops import rearrange
 
-
+# Used in encoder of VQGAN
 class VectorQuantizer(nn.Module):
     """
     see https://github.com/MishaLaskin/vqvae/blob/d761a999e2267766400dc646d82d3ac3657771d4/models/quantizer.py
