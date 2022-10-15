@@ -1,3 +1,4 @@
+from time import sleep
 import torch
 import torch.nn.functional as F
 import pytorch_lightning as pl
@@ -9,7 +10,7 @@ from taming.modules.vqvae.quantize import VectorQuantizer2 as VectorQuantizer
 from taming.modules.vqvae.quantize import GumbelQuantize
 from taming.modules.vqvae.quantize import EMAVectorQuantizer
 
-# Edited out the quantized modules (we don't need them)
+# TODO Edited out the quantized modules (we don't need them)
 class VQModel(pl.LightningModule):
     def __init__(self,
                  ddconfig,
@@ -29,6 +30,7 @@ class VQModel(pl.LightningModule):
         self.encoder = Encoder(**ddconfig)
         self.decoder = Decoder(**ddconfig)
         self.loss = instantiate_from_config(lossconfig)
+        # TODO: We don't need the quantization modules (quantize, quant_conv, post_quant_conv)
         self.quantize = VectorQuantizer(n_embed, embed_dim, beta=0.25,
                                         remap=remap, sane_index_shape=sane_index_shape)
         self.quant_conv = torch.nn.Conv2d(ddconfig["z_channels"], embed_dim, 1)
@@ -54,13 +56,16 @@ class VQModel(pl.LightningModule):
         print(f"Restored from {path}")
 
     def encode(self, x):
+        # TODO: No quant_conv and quantize step
         h = self.encoder(x)
-        h = self.quant_conv(h)
-        quant, emb_loss, info = self.quantize(h)
-        return quant, emb_loss, info
+        # h = self.quant_conv(h)
+        # quant, emb_loss, info = self.quantize(h)
+        # return quant, emb_loss, info
+        return h
 
     def decode(self, quant):
-        quant = self.post_quant_conv(quant)
+        # TODO: No post_quant_conv
+        # quant = self.post_quant_conv(quant)
         dec = self.decoder(quant)
         return dec
 
@@ -70,7 +75,10 @@ class VQModel(pl.LightningModule):
         return dec
 
     def forward(self, input):
-        quant, diff, _ = self.encode(input)
+        # TODO: Change the encode output
+        # FIXME
+        # quant, diff, _ = self.encode(input)
+        quant = self.encode(input)
         dec = self.decode(quant)
         return dec, diff
 

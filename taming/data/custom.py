@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 
 from taming.data.base import ImagePaths, NumpyPaths, ConcatDatasetWithIndex
 
-
+# TODO
 class CustomBase(Dataset):
     def __init__(self, *args, **kwargs):
         super().__init__()
