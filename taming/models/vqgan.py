@@ -9,6 +9,7 @@ from taming.modules.vqvae.quantize import VectorQuantizer2 as VectorQuantizer
 from taming.modules.vqvae.quantize import GumbelQuantize
 from taming.modules.vqvae.quantize import EMAVectorQuantizer
 
+# Edited out the quantized modules (we don't need them)
 class VQModel(pl.LightningModule):
     def __init__(self,
                  ddconfig,
