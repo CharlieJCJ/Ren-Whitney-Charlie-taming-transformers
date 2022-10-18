@@ -28,15 +28,15 @@ model:
 data:
   target: main.DataModuleFromConfig
   params:
-    batch_size: 5
-    num_workers: 8
+    batch_size: 2
+    num_workers: 4
     train:
       target: taming.data.custom.CustomTrain
       params:
-        training_images_list_file: some/training.txt
+        training_images_list_file: /home/zhren/Datasets/stylebabel/training.txt
         size: 256
     validation:
       target: taming.data.custom.CustomTest
       params:
-        test_images_list_file: some/test.txt
+        test_images_list_file: /home/zhren/Datasets/stylebabel/testing.txt
         size: 256

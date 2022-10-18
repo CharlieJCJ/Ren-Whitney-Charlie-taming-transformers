@@ -1,6 +1,8 @@
 import argparse, os, sys, datetime, glob, importlib
 from omegaconf import OmegaConf
+from omegaconf._utils import is_attr_class, is_dataclass
 import numpy as np
+import pathlib
 from PIL import Image
 import torch
 import torchvision
@@ -192,15 +194,15 @@ class SetupCallback(Callback):
             os.makedirs(self.logdir, exist_ok=True)
             os.makedirs(self.ckptdir, exist_ok=True)
             os.makedirs(self.cfgdir, exist_ok=True)
-
+            
             print("Project config")
-            print(self.config.pretty())
-            OmegaConf.save(self.config,
+            # print(self.config.pretty())
+            self.save_omega_conf(self.config,
                            os.path.join(self.cfgdir, "{}-project.yaml".format(self.now)))
 
             print("Lightning config")
-            print(self.lightning_config.pretty())
-            OmegaConf.save(OmegaConf.create({"lightning": self.lightning_config}),
+            # print(self.lightning_config.pretty())
+            self.save_omega_conf(OmegaConf.create({"lightning": self.lightning_config}),
                            os.path.join(self.cfgdir, "{}-lightning.yaml".format(self.now)))
 
         else:
@@ -213,6 +215,18 @@ class SetupCallback(Callback):
                     os.rename(self.logdir, dst)
                 except FileNotFoundError:
                     pass
+    
+    def save_omega_conf(self, config, f, resolve=False):
+        if is_dataclass(config) or is_attr_class(config):
+            config = OmegaConf.create(config)
+        data = OmegaConf.to_yaml(config, resolve=resolve)
+
+        if isinstance(f, (str, pathlib.Path)):
+            with open(f, "w") as file:
+                file.write(data)
+        elif hasattr(f, "write"):
+            f.write(data)
+            f.flush()
 
 
 class ImageLogger(Callback):
@@ -420,6 +434,10 @@ if __name__ == "__main__":
         trainer_config = lightning_config.get("trainer", OmegaConf.create())
         # default to ddp
         trainer_config["distributed_backend"] = "ddp"
+
+        if not "gpus" in trainer_config:
+            trainer_config["gpus"] = "0,1,2,3"
+
         for k in nondefault_trainer_args(opt):
             trainer_config[k] = getattr(opt, k)
         if not "gpus" in trainer_config:
@@ -443,28 +461,28 @@ if __name__ == "__main__":
         # wandb >= 0.10.0 seems to fix it but still interferes with pudb
         # debugging (wrongly sized pudb ui)
         # thus prefer testtube for now
-        default_logger_cfgs = {
-            "wandb": {
-                "target": "pytorch_lightning.loggers.WandbLogger",
-                "params": {
-                    "name": nowname,
-                    "save_dir": logdir,
-                    "offline": opt.debug,
-                    "id": nowname,
-                }
-            },
-            "testtube": {
-                "target": "pytorch_lightning.loggers.TestTubeLogger",
-                "params": {
-                    "name": "testtube",
-                    "save_dir": logdir,
-                }
-            },
-        }
-        default_logger_cfg = default_logger_cfgs["testtube"]
-        logger_cfg = lightning_config.logger or OmegaConf.create()
-        logger_cfg = OmegaConf.merge(default_logger_cfg, logger_cfg)
-        trainer_kwargs["logger"] = instantiate_from_config(logger_cfg)
+        # default_logger_cfgs = {
+        #     "wandb": {
+        #         "target": "pytorch_lightning.loggers.WandbLogger",
+        #         "params": {
+        #             "name": nowname,
+        #             "save_dir": logdir,
+        #             "offline": opt.debug,
+        #             "id": nowname,
+        #         }
+        #     },
+        #     "testtube": {
+        #         "target": "pytorch_lightning.loggers.TestTubeLogger",
+        #         "params": {
+        #             "name": "testtube",
+        #             "save_dir": logdir,
+        #         }
+        #     },
+        # }
+        # default_logger_cfg = default_logger_cfgs["testtube"]
+        # logger_cfg = OmegaConf.create()
+        # logger_cfg = OmegaConf.merge(default_logger_cfg, logger_cfg)
+        # trainer_kwargs["logger"] = instantiate_from_config(logger_cfg)
 
         # modelcheckpoint - use TrainResult/EvalResult(checkpoint_on=metric) to
         # specify which metric is used to determine best models
@@ -482,7 +500,7 @@ if __name__ == "__main__":
             default_modelckpt_cfg["params"]["monitor"] = model.monitor
             default_modelckpt_cfg["params"]["save_top_k"] = 3
 
-        modelckpt_cfg = lightning_config.modelcheckpoint or OmegaConf.create()
+        modelckpt_cfg = OmegaConf.create()
         modelckpt_cfg = OmegaConf.merge(default_modelckpt_cfg, modelckpt_cfg)
         trainer_kwargs["checkpoint_callback"] = instantiate_from_config(modelckpt_cfg)
 
@@ -516,11 +534,12 @@ if __name__ == "__main__":
                 }
             },
         }
-        callbacks_cfg = lightning_config.callbacks or OmegaConf.create()
+        callbacks_cfg = OmegaConf.create()
         callbacks_cfg = OmegaConf.merge(default_callbacks_cfg, callbacks_cfg)
         trainer_kwargs["callbacks"] = [instantiate_from_config(callbacks_cfg[k]) for k in callbacks_cfg]
 
         trainer = Trainer.from_argparse_args(trainer_opt, **trainer_kwargs)
+
 
         # data
         data = instantiate_from_config(config.data)
@@ -536,7 +555,7 @@ if __name__ == "__main__":
             ngpu = len(lightning_config.trainer.gpus.strip(",").split(','))
         else:
             ngpu = 1
-        accumulate_grad_batches = lightning_config.trainer.accumulate_grad_batches or 1
+        accumulate_grad_batches = 1
         print(f"accumulate_grad_batches = {accumulate_grad_batches}")
         lightning_config.trainer.accumulate_grad_batches = accumulate_grad_batches
         model.learning_rate = accumulate_grad_batches * ngpu * bs * base_lr
@@ -548,12 +567,12 @@ if __name__ == "__main__":
             # run all checkpoint hooks
             if trainer.global_rank == 0:
                 print("Summoning checkpoint.")
-                ckpt_path = os.path.join(ckptdir, "last.ckpt")
-                trainer.save_checkpoint(ckpt_path)
+                # ckpt_path = os.path.join(ckptdir, "last.ckpt")
+                # trainer.save_checkpoint(ckpt_path)
 
         def divein(*args, **kwargs):
             if trainer.global_rank == 0:
-                import pudb; pudb.set_trace()
+                None
 
         import signal
         signal.signal(signal.SIGUSR1, melk)
@@ -570,11 +589,7 @@ if __name__ == "__main__":
             trainer.test(model, data)
     except Exception:
         if opt.debug and trainer.global_rank==0:
-            try:
-                import pudb as debugger
-            except ImportError:
-                import pdb as debugger
-            debugger.post_mortem()
+            None
         raise
     finally:
         # move newly created debug project to debug_runs
