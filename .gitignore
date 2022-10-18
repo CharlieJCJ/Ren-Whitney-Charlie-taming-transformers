@@ -1,4 +1,4 @@
-transformers.egg-info/
+taming_transformers.egg-info/
 **/__pycache__/
 logs/
 lightning_logs/
