@@ -1,5 +1,5 @@
 transformers.egg-info/
-*/__pycache__/
+**/__pycache__/
 logs/
 lightning_logs/
 
