@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from taming.modules.losses.lpips import LPIPS
 from taming.modules.discriminator.model import NLayerDiscriminator, weights_init
+from torch.cuda.amp import GradScaler, autocast
 
 
 class DummyLoss(nn.Module):
@@ -29,7 +30,36 @@ def vanilla_d_loss(logits_real, logits_fake):
         torch.mean(torch.nn.functional.softplus(-logits_real)) +
         torch.mean(torch.nn.functional.softplus(logits_fake)))
     return d_loss
+def info_nce_loss(features, device):
+    features = features.reshape((features.shape[0], features.shape[1]))
+    labels = torch.cat([torch.arange(2) for i in range(2)], dim=0) // FIXME (batchsize need to be parameterized)
+    labels = (labels.unsqueeze(0) == labels.unsqueeze(1)).float()
+    labels = labels.to(device)
 
+    features = F.normalize(features, dim=1)
+
+    similarity_matrix = torch.matmul(features, features.T)
+    # assert similarity_matrix.shape == (
+    #     self.args.n_views * self.args.batch_size, self.args.n_views * self.args.batch_size)
+    # assert similarity_matrix.shape == labels.shape
+
+    # discard the main diagonal from both: labels and similarities matrix
+    mask = torch.eye(labels.shape[0], dtype=torch.bool).to(device)
+    labels = labels[~mask].view(labels.shape[0], -1)
+    similarity_matrix = similarity_matrix[~mask].view(similarity_matrix.shape[0], -1)
+    # assert similarity_matrix.shape == labels.shape
+
+    # select and combine multiple positives
+    positives = similarity_matrix[labels.bool()].view(labels.shape[0], -1)
+
+    # select only the negatives the negatives
+    negatives = similarity_matrix[~labels.bool()].view(similarity_matrix.shape[0], -1)
+
+    logits = torch.cat([positives, negatives], dim=1)
+    labels = torch.zeros(logits.shape[0], dtype=torch.long).to(device)
+
+    logits = logits / 0.07
+    return logits, labels
 # The loss that we are currently using.
 class VQLPIPSWithDiscriminator(nn.Module):
     def __init__(self, disc_start, codebook_weight=1.0, pixelloss_weight=1.0,
@@ -74,7 +104,7 @@ class VQLPIPSWithDiscriminator(nn.Module):
         return d_weight
 
     def forward(self, inputs, reconstructions, optimizer_idx,
-                global_step, last_layer=None, cond=None, split="train"):
+                global_step, last_layer=None, cond=None, split="train", device = "cuda"):
         # x is the input image, trans1 is simclr transformed image, trans2 is the other simclr transformed image -> calculate loss.
         x, tran1, trans2 = inputs
         rec_loss = torch.abs(x.contiguous() - reconstructions.contiguous())
@@ -88,7 +118,7 @@ class VQLPIPSWithDiscriminator(nn.Module):
         #nll_loss = torch.sum(nll_loss) / nll_loss.shape[0]
         nll_loss = torch.mean(nll_loss)
 
-
+        criterionSimCLR = torch.nn.CrossEntropyLoss()
         # now the GAN part
         if optimizer_idx == 0:
             # generator update
@@ -108,7 +138,17 @@ class VQLPIPSWithDiscriminator(nn.Module):
 
             disc_factor = adopt_weight(self.disc_factor, global_step, threshold=self.discriminator_iter_start)
             # TODO: Add contrastive loss
-            loss = nll_loss + d_weight * disc_factor * g_loss
+            
+            transformed_imgs = torch.cat([tran1, trans2], dim=0)
+            with autocast(enabled=True):
+                # print("get constrastive loss")
+                # use forward
+                __, features = self.encode(transformed_imgs) # only use z
+                logits, labels = info_nce_loss(features, device)
+                constrastive_loss = criterionSimCLR(logits, labels)
+
+
+            loss = nll_loss + d_weight * disc_factor * g_loss + constrastive_loss
 
             # TODO: Add contrastive loss logs
             log = {"{}/total_loss".format(split): loss.clone().detach().mean(),

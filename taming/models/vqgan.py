@@ -104,7 +104,7 @@ class VQModel(pl.LightningModule):
         if optimizer_idx == 0:
             # autoencode
             aeloss, log_dict_ae = self.loss(x, xrec, optimizer_idx, self.global_step,
-                                            last_layer=self.get_last_layer(), split="train")
+                                            last_layer=self.get_last_layer(), split="train", device = self.device)
 
             self.log("train/aeloss", aeloss, prog_bar=True, logger=True, on_step=True, on_epoch=True)
             self.log_dict(log_dict_ae, prog_bar=False, logger=True, on_step=True, on_epoch=True)
@@ -113,7 +113,7 @@ class VQModel(pl.LightningModule):
         if optimizer_idx == 1:
             # discriminator
             discloss, log_dict_disc = self.loss(x, xrec, optimizer_idx, self.global_step,
-                                            last_layer=self.get_last_layer(), split="train")
+                                            last_layer=self.get_last_layer(), split="train", device = self.device)
             self.log("train/discloss", discloss, prog_bar=True, logger=True, on_step=True, on_epoch=True)
             self.log_dict(log_dict_disc, prog_bar=False, logger=True, on_step=True, on_epoch=True)
             return discloss
@@ -124,10 +124,10 @@ class VQModel(pl.LightningModule):
         
         xrec = self(x[0])
         aeloss, log_dict_ae = self.loss(x, xrec, 0, self.global_step,
-                                            last_layer=self.get_last_layer(), split="val")
+                                            last_layer=self.get_last_layer(), split="val", device = self.device)
 
         discloss, log_dict_disc = self.loss(x, xrec, 1, self.global_step,
-                                            last_layer=self.get_last_layer(), split="val")
+                                            last_layer=self.get_last_layer(), split="val", device = self.device)
         rec_loss = log_dict_ae["val/rec_loss"]
         self.log("val/rec_loss", rec_loss,
                    prog_bar=True, logger=True, on_step=True, on_epoch=True, sync_dist=True)
