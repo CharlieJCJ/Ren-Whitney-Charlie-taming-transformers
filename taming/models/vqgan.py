@@ -151,7 +151,7 @@ class VQModel(pl.LightningModule):
 
     def log_images(self, batch, **kwargs):
         log = dict()
-        x = self.get_input(batch, self.image_key)
+        x, __, __ = self.get_input(batch, self.image_key)
         x = x.to(self.device)
         xrec = self(x)
         if x.shape[1] > 3:
