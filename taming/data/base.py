@@ -55,7 +55,7 @@ class ImagePaths(Dataset):
         
         # Reshape to size x size (no matter what)
         data_transforms = transforms.Compose([transforms.ToPILImage(),
-                                            #   transforms.Resize(size=(size, size)),
+                                              transforms.Resize(size=(size, size)),
                                               transforms.RandomResizedCrop(size=size),
                                               transforms.RandomHorizontalFlip(),
                                               transforms.RandomApply([color_jitter], p=0.8),
