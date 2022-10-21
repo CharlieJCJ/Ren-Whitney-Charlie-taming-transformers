@@ -119,7 +119,9 @@ class VQModel(pl.LightningModule):
             return discloss
 
     def validation_step(self, batch, batch_idx):
-        x, trans1, trans2 = self.get_input(batch, self.image_key)
+        x = self.get_input(batch, self.image_key)
+        print("x shape: in validstep", x.shape)
+        
         xrec = self(x)
         aeloss, log_dict_ae = self.loss(x, xrec, 0, self.global_step,
                                             last_layer=self.get_last_layer(), split="val")
