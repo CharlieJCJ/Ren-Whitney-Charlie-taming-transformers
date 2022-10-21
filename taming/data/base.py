@@ -55,7 +55,7 @@ class ImagePaths(Dataset):
         
         # Reshape to size x size (no matter what)
         data_transforms = transforms.Compose([transforms.ToPILImage(),
-                                              transforms.Resize(size=(size, size)),
+                                            #   transforms.Resize(size=(size, size)),
                                               transforms.RandomResizedCrop(size=size),
                                               transforms.RandomHorizontalFlip(),
                                               transforms.RandomApply([color_jitter], p=0.8),
@@ -72,7 +72,7 @@ class ImagePaths(Dataset):
             image = image.convert("RGB")
         image = np.array(image).astype(np.uint8)
         image = self.preprocessor(image=image)["image"]
-        print(len(image), image.shape, image.dtype)
+        # print(len(image), image.shape, image.dtype)
         # Add simclr VIEWS data
         [view1, view2] = [self.get_simclr_pipeline_transform(size=self.size)(image) for i in range(1, 3)]
         image = (image/127.5 - 1.0).astype(np.float32)
