@@ -98,7 +98,7 @@ class VQModel(pl.LightningModule):
     def training_step(self, batch, batch_idx, optimizer_idx):
         # Now get_input returns a tuple of (image, trans1, trans2)
         x = self.get_input(batch, self.image_key)
-        print("x shape: in trainstep", x.shape)
+        print("x shape: in trainstep", len(x))
         xrec = self(x[0]) # x[0] is the image
 
         if optimizer_idx == 0:
@@ -120,7 +120,7 @@ class VQModel(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         x = self.get_input(batch, self.image_key)
-        print("x shape: in validstep", x.shape)
+        print("x shape: in validstep", len(x))
         
         xrec = self(x)
         aeloss, log_dict_ae = self.loss(x, xrec, 0, self.global_step,
