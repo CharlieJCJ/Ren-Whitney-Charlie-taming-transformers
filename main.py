@@ -456,6 +456,10 @@ if __name__ == "__main__":
         # trainer and callbacks
         trainer_kwargs = dict()
 
+        checkpoint_callback = ModelCheckpoint(
+            dirpath=ckptdir, filename="{epoch}-{step}", save_last=True
+        )
+
         # default logger configs
         # NOTE wandb < 0.10.0 interferes with shutdown
         # wandb >= 0.10.0 seems to fix it but still interferes with pudb
@@ -486,23 +490,23 @@ if __name__ == "__main__":
 
         # modelcheckpoint - use TrainResult/EvalResult(checkpoint_on=metric) to
         # specify which metric is used to determine best models
-        default_modelckpt_cfg = {
-            "target": "pytorch_lightning.callbacks.ModelCheckpoint",
-            "params": {
-                "dirpath": ckptdir,
-                "filename": "{epoch:06}",
-                "verbose": True,
-                "save_last": True,
-            }
-        }
-        if hasattr(model, "monitor"):
-            print(f"Monitoring {model.monitor} as checkpoint metric.")
-            default_modelckpt_cfg["params"]["monitor"] = model.monitor
-            default_modelckpt_cfg["params"]["save_top_k"] = 3
+        # default_modelckpt_cfg = {
+        #     "target": "pytorch_lightning.callbacks.ModelCheckpoint",
+        #     "params": {
+        #         "dirpath": ckptdir,
+        #         "filename": "{epoch:06}",
+        #         "verbose": True,
+        #         "save_last": True,
+        #     }
+        # }
+        # if hasattr(model, "monitor"):
+        #     print(f"Monitoring {model.monitor} as checkpoint metric.")
+        #     default_modelckpt_cfg["params"]["monitor"] = model.monitor
+        #     default_modelckpt_cfg["params"]["save_top_k"] = 3
 
-        modelckpt_cfg = OmegaConf.create()
-        modelckpt_cfg = OmegaConf.merge(default_modelckpt_cfg, modelckpt_cfg)
-        trainer_kwargs["checkpoint_callback"] = instantiate_from_config(modelckpt_cfg)
+        # modelckpt_cfg = OmegaConf.create()
+        # modelckpt_cfg = OmegaConf.merge(default_modelckpt_cfg, modelckpt_cfg)
+        # trainer_kwargs["checkpoint_callback"] = instantiate_from_config(modelckpt_cfg)
 
         # add callback which sets up log directory
         default_callbacks_cfg = {
@@ -537,6 +541,15 @@ if __name__ == "__main__":
         callbacks_cfg = OmegaConf.create()
         callbacks_cfg = OmegaConf.merge(default_callbacks_cfg, callbacks_cfg)
         trainer_kwargs["callbacks"] = [instantiate_from_config(callbacks_cfg[k]) for k in callbacks_cfg]
+        trainer_kwargs["callbacks"].append(checkpoint_callback)
+
+        # # ---------------------------------------------------
+        # # Checkpoint Resume
+        # # ---------------------------------------------------
+        # trainer_kwargs["checkpoint_callback"] = True
+        # last_checkpoint = find_last_checkpoint_path(ckptdir)
+        # print("Resuming from Checkpoint " + str(last_checkpoint))
+
 
         trainer = Trainer.from_argparse_args(trainer_opt, **trainer_kwargs)
 
