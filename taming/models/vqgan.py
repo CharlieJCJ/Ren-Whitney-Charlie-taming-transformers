@@ -86,6 +86,7 @@ class VQModel(pl.LightningModule):
         # Now x is a tuple of (image, trans1, trans2)
         # TODO: break the tuple into image, trans1, trans2
         x, trans1, trans2 = batch[k]
+        print("x shape: in get_input", x.shape, "trans1 shape: in get_input", trans1.shape, "trans2 shape", trans2.shape)
         # Ignore it for now
         if len(x.shape) == 3:
             x = x[..., None]
@@ -97,7 +98,7 @@ class VQModel(pl.LightningModule):
     def training_step(self, batch, batch_idx, optimizer_idx):
         # Now get_input returns a tuple of (image, trans1, trans2)
         x = self.get_input(batch, self.image_key)
-        
+        print("x shape: in trainstep", x.shape)
         xrec = self(x[0]) # x[0] is the image
 
         if optimizer_idx == 0:
@@ -138,9 +139,9 @@ class VQModel(pl.LightningModule):
         lr = self.learning_rate
         opt_ae = torch.optim.Adam(list(self.encoder.parameters())+
                                   list(self.decoder.parameters()),
-                                  lr=lr, betas=(0.5, 0.9))
+                                  lr=lr, betas=(0.0, 0.99))
         opt_disc = torch.optim.Adam(self.loss.discriminator.parameters(),
-                                    lr=lr, betas=(0.5, 0.9))
+                                    lr=lr, betas=(0.0, 0.99))
         return [opt_ae, opt_disc], []
 
     def get_last_layer(self):
