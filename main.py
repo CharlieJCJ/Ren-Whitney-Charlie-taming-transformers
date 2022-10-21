@@ -150,11 +150,13 @@ class DataModuleFromConfig(pl.LightningDataModule):
             self.dataset_configs["test"] = test
             self.test_dataloader = self._test_dataloader
         self.wrap = wrap
-
+        
+    # TODO: Already handled in CustomTrain and CustomTest
     def prepare_data(self):
         for data_cfg in self.dataset_configs.values():
+            # get CustomTrain and CustomTest objects, which includes getitem, preprocess methods from custom_vqgan.yaml
             instantiate_from_config(data_cfg)
-
+    # TODO: Already handled in CustomTrain and CustomTest
     def setup(self, stage=None):
         self.datasets = dict(
             (k, instantiate_from_config(self.dataset_configs[k]))
@@ -163,6 +165,7 @@ class DataModuleFromConfig(pl.LightningDataModule):
             for k in self.datasets:
                 self.datasets[k] = WrappedDataset(self.datasets[k])
 
+    # TODO: Already handled in CustomTrain and CustomTest
     def _train_dataloader(self):
         return DataLoader(self.datasets["train"], batch_size=self.batch_size,
                           num_workers=self.num_workers, shuffle=True, collate_fn=custom_collate)

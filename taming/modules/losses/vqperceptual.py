@@ -30,7 +30,7 @@ def vanilla_d_loss(logits_real, logits_fake):
         torch.mean(torch.nn.functional.softplus(logits_fake)))
     return d_loss
 
-
+# The loss that we are currently using.
 class VQLPIPSWithDiscriminator(nn.Module):
     def __init__(self, disc_start, codebook_weight=1.0, pixelloss_weight=1.0,
                  disc_num_layers=3, disc_in_channels=3, disc_factor=1.0, disc_weight=1.0,
@@ -75,9 +75,11 @@ class VQLPIPSWithDiscriminator(nn.Module):
 
     def forward(self, inputs, reconstructions, optimizer_idx,
                 global_step, last_layer=None, cond=None, split="train"):
-        rec_loss = torch.abs(inputs.contiguous() - reconstructions.contiguous())
+        # x is the input image, trans1 is simclr transformed image, trans2 is the other simclr transformed image -> calculate loss.
+        x, tran1, trans2 = inputs
+        rec_loss = torch.abs(x.contiguous() - reconstructions.contiguous())
         if self.perceptual_weight > 0:
-            p_loss = self.perceptual_loss(inputs.contiguous(), reconstructions.contiguous())
+            p_loss = self.perceptual_loss(x.contiguous(), reconstructions.contiguous())
             rec_loss = rec_loss + self.perceptual_weight * p_loss
         else:
             p_loss = torch.tensor([0.0])
@@ -85,6 +87,7 @@ class VQLPIPSWithDiscriminator(nn.Module):
         nll_loss = rec_loss
         #nll_loss = torch.sum(nll_loss) / nll_loss.shape[0]
         nll_loss = torch.mean(nll_loss)
+
 
         # now the GAN part
         if optimizer_idx == 0:
@@ -104,9 +107,10 @@ class VQLPIPSWithDiscriminator(nn.Module):
                 d_weight = torch.tensor(0.0)
 
             disc_factor = adopt_weight(self.disc_factor, global_step, threshold=self.discriminator_iter_start)
-            # TODO: Add constructive loss
+            # TODO: Add contrastive loss
             loss = nll_loss + d_weight * disc_factor * g_loss
 
+            # TODO: Add contrastive loss logs
             log = {"{}/total_loss".format(split): loss.clone().detach().mean(),
                    "{}/nll_loss".format(split): nll_loss.detach().mean(),
                    "{}/rec_loss".format(split): rec_loss.detach().mean(),
@@ -120,10 +124,10 @@ class VQLPIPSWithDiscriminator(nn.Module):
         if optimizer_idx == 1:
             # second pass for discriminator update
             if cond is None:
-                logits_real = self.discriminator(inputs.contiguous().detach())
+                logits_real = self.discriminator(x.contiguous().detach())
                 logits_fake = self.discriminator(reconstructions.contiguous().detach())
             else:
-                logits_real = self.discriminator(torch.cat((inputs.contiguous().detach(), cond), dim=1))
+                logits_real = self.discriminator(torch.cat((x.contiguous().detach(), cond), dim=1))
                 logits_fake = self.discriminator(torch.cat((reconstructions.contiguous().detach(), cond), dim=1))
 
             disc_factor = adopt_weight(self.disc_factor, global_step, threshold=self.discriminator_iter_start)

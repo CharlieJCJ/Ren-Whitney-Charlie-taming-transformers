@@ -34,5 +34,3 @@ class CustomTest(CustomBase):
         with open(test_images_list_file, "r") as f:
             paths = f.read().splitlines()
         self.data = ImagePaths(paths=paths, size=size, random_crop=False)
-
-

@@ -83,15 +83,22 @@ class VQModel(pl.LightningModule):
         return dec
 
     def get_input(self, batch, k):
-        x = batch[k]
+        # Now x is a tuple of (image, trans1, trans2)
+        # TODO: break the tuple into image, trans1, trans2
+        x, trans1, trans2 = batch[k]
+        # Ignore it for now
         if len(x.shape) == 3:
             x = x[..., None]
         x = x.permute(0, 3, 1, 2).to(memory_format=torch.contiguous_format)
-        return x.float()
+        [trans1, trans2] = [t.permute(0, 3, 1, 2).to(memory_format=torch.contiguous_format) 
+                                                    for t in [trans1, trans2]]
+        return x.float(), trans1.float(), trans2.float()
 
     def training_step(self, batch, batch_idx, optimizer_idx):
+        # Now get_input returns a tuple of (image, trans1, trans2)
         x = self.get_input(batch, self.image_key)
-        xrec = self(x)
+        
+        xrec = self(x[0]) # x[0] is the image
 
         if optimizer_idx == 0:
             # autoencode
@@ -111,7 +118,7 @@ class VQModel(pl.LightningModule):
             return discloss
 
     def validation_step(self, batch, batch_idx):
-        x = self.get_input(batch, self.image_key)
+        x, trans1, trans2 = self.get_input(batch, self.image_key)
         xrec = self(x)
         aeloss, log_dict_ae = self.loss(x, xrec, 0, self.global_step,
                                             last_layer=self.get_last_layer(), split="val")
