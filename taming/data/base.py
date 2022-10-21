@@ -54,7 +54,8 @@ class ImagePaths(Dataset):
         color_jitter = transforms.ColorJitter(0.8 * s, 0.8 * s, 0.8 * s, 0.2 * s)
         
         # Reshape to size x size (no matter what)
-        data_transforms = transforms.Compose([transforms.Resize(size=(size, size)),
+        data_transforms = transforms.Compose([transforms.ToPILImage(),
+                                              transforms.Resize(size=(size, size)),
                                               transforms.RandomResizedCrop(size=size),
                                               transforms.RandomHorizontalFlip(),
                                               transforms.RandomApply([color_jitter], p=0.8),
