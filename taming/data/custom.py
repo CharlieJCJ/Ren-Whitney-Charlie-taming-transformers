@@ -19,7 +19,7 @@ class CustomBase(Dataset):
         return example
 
 
-
+# Handled by ImagePaths
 class CustomTrain(CustomBase):
     def __init__(self, size, training_images_list_file):
         super().__init__()

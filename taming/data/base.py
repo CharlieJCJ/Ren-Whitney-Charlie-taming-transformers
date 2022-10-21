@@ -73,7 +73,7 @@ class ImagePaths(Dataset):
         image = self.preprocessor(image=image)["image"]
 
         # Add simclr VIEWS data
-        [view1, view2] = [self.get_simclr_pipeline_transform(size=self.size)(image) for i in range(2)]
+        [view1, view2] = [self.get_simclr_pipeline_transform(size=self.size)(image[i]) for i in range(1, 3)]
         image = (image/127.5 - 1.0).astype(np.float32)
         [view1, view2] = [(view/127.5 - 1.0).astype(np.float32) for view in [view1, view2]]
         return (image, view1, view2)
