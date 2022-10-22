@@ -104,12 +104,11 @@ class VQLPIPSWithDiscriminator(nn.Module):
         return d_weight
 
     def forward(self, inputs, reconstructions, optimizer_idx,
-                global_step, last_layer=None, cond=None, split="train", device = "cuda"):
+                global_step, last_layer=None, cond=None, split="train", device = "cuda", transformed_imgs_encoding=None):
         # x is the input image, trans1 is simclr transformed image, trans2 is the other simclr transformed image -> calculate loss.
-        x, tran1, trans2 = inputs
-        rec_loss = torch.abs(x.contiguous() - reconstructions.contiguous())
+        rec_loss = torch.abs(inputs.contiguous() - reconstructions.contiguous())
         if self.perceptual_weight > 0:
-            p_loss = self.perceptual_loss(x.contiguous(), reconstructions.contiguous())
+            p_loss = self.perceptual_loss(inputs.contiguous(), reconstructions.contiguous())
             rec_loss = rec_loss + self.perceptual_weight * p_loss
         else:
             p_loss = torch.tensor([0.0])
@@ -139,12 +138,10 @@ class VQLPIPSWithDiscriminator(nn.Module):
             disc_factor = adopt_weight(self.disc_factor, global_step, threshold=self.discriminator_iter_start)
             # TODO: Add contrastive loss
             
-            transformed_imgs = torch.cat([tran1, trans2], dim=0)
             with autocast(enabled=True):
                 # print("get constrastive loss")
                 # use forward
-                __, features = self.encode(transformed_imgs) # only use z
-                logits, labels = info_nce_loss(features, device)
+                logits, labels = info_nce_loss(transformed_imgs_encoding, device)
                 constrastive_loss = criterionSimCLR(logits, labels)
 
 
@@ -164,10 +161,10 @@ class VQLPIPSWithDiscriminator(nn.Module):
         if optimizer_idx == 1:
             # second pass for discriminator update
             if cond is None:
-                logits_real = self.discriminator(x.contiguous().detach())
+                logits_real = self.discriminator(inputs.contiguous().detach())
                 logits_fake = self.discriminator(reconstructions.contiguous().detach())
             else:
-                logits_real = self.discriminator(torch.cat((x.contiguous().detach(), cond), dim=1))
+                logits_real = self.discriminator(torch.cat((inputs.contiguous().detach(), cond), dim=1))
                 logits_fake = self.discriminator(torch.cat((reconstructions.contiguous().detach(), cond), dim=1))
 
             disc_factor = adopt_weight(self.disc_factor, global_step, threshold=self.discriminator_iter_start)
