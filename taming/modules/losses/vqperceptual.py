@@ -139,12 +139,11 @@ class VQLPIPSWithDiscriminator(nn.Module):
             # TODO: Add contrastive loss
             
             with autocast(enabled=True):
-                # print("get constrastive loss")
                 # use forward
                 logits, labels = info_nce_loss(transformed_imgs_encoding, device)
                 constrastive_loss = criterionSimCLR(logits, labels)
 
-
+            print("constrastive_loss", constrastive_loss)
             loss = nll_loss + d_weight * disc_factor * g_loss + constrastive_loss
 
             # TODO: Add contrastive loss logs

@@ -98,14 +98,16 @@ class VQModel(pl.LightningModule):
     def training_step(self, batch, batch_idx, optimizer_idx):
         # Now get_input returns a tuple of (image, trans1, trans2)
         x = self.get_input(batch, self.image_key)
-        print("x shape: in trainstep", len(x))
-        xrec = self(x[0]) # x[0] is the image
+        original_img = x[0]
+        print("x shape: in validstep", len(x))
+        xrec = self(original_img)
         transformed_imgs = torch.cat([x[1], x[2]], dim=0)
         transformed_imgs_encoding = self.encode(transformed_imgs)
         if optimizer_idx == 0:
             # autoencode
-            aeloss, log_dict_ae = self.loss(x, xrec, optimizer_idx, self.global_step,
-                                            last_layer=self.get_last_layer(), split="train", device = self.device)
+            aeloss, log_dict_ae = self.loss(original_img, xrec, optimizer_idx, self.global_step,
+                                            last_layer=self.get_last_layer(), split="train", device = self.device,
+                                            transformed_imgs_encoding = transformed_imgs_encoding)
 
             self.log("train/aeloss", aeloss, prog_bar=True, logger=True, on_step=True, on_epoch=True)
             self.log_dict(log_dict_ae, prog_bar=False, logger=True, on_step=True, on_epoch=True)
@@ -113,8 +115,9 @@ class VQModel(pl.LightningModule):
 
         if optimizer_idx == 1:
             # discriminator
-            discloss, log_dict_disc = self.loss(x, xrec, optimizer_idx, self.global_step,
-                                            last_layer=self.get_last_layer(), split="train", device = self.device)
+            discloss, log_dict_disc = self.loss(original_img, xrec, optimizer_idx, self.global_step,
+                                            last_layer=self.get_last_layer(), split="train", device = self.device,
+                                            transformed_imgs_encoding = transformed_imgs_encoding)
             self.log("train/discloss", discloss, prog_bar=True, logger=True, on_step=True, on_epoch=True)
             self.log_dict(log_dict_disc, prog_bar=False, logger=True, on_step=True, on_epoch=True)
             return discloss
@@ -126,11 +129,13 @@ class VQModel(pl.LightningModule):
         xrec = self(original_img)
         transformed_imgs = torch.cat([x[1], x[2]], dim=0)
         transformed_imgs_encoding = self.encode(transformed_imgs)
-        aeloss, log_dict_ae = self.loss(x, xrec, 0, self.global_step,
-                                            last_layer=self.get_last_layer(), split="val", device = self.device)
+        aeloss, log_dict_ae = self.loss(original_img, xrec, 0, self.global_step,
+                                            last_layer=self.get_last_layer(), split="val", device = self.device,
+                                            transformed_imgs_encoding = transformed_imgs_encoding)
 
-        discloss, log_dict_disc = self.loss(x, xrec, 1, self.global_step,
-                                            last_layer=self.get_last_layer(), split="val", device = self.device)
+        discloss, log_dict_disc = self.loss(original_img, xrec, 1, self.global_step,
+                                            last_layer=self.get_last_layer(), split="val", device = self.device,
+                                            transformed_imgs_encoding = transformed_imgs_encoding)
         rec_loss = log_dict_ae["val/rec_loss"]
         self.log("val/rec_loss", rec_loss,
                    prog_bar=True, logger=True, on_step=True, on_epoch=True, sync_dist=True)
