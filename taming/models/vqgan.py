@@ -57,12 +57,14 @@ class VQModel(pl.LightningModule):
 
     def encode(self, x):
         # TODO: No quant_conv and quantize step
-        h = self.encoder(x)
+        h, z = self.encoder(x)
         # h = self.quant_conv(h)
         # quant, emb_loss, info = self.quantize(h)
         # return quant, emb_loss, info
         return h
-
+    def encoder_projection(self, x):
+        h, z = self.encode(x)
+        return z
     def decode(self, h):
         # TODO: No post_quant_conv
         # quant = self.post_quant_conv(quant)
