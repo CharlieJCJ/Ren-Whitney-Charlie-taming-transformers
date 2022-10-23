@@ -63,7 +63,7 @@ class VQModel(pl.LightningModule):
         # return quant, emb_loss, info
         return h
     def encoder_projection(self, x):
-        h, z = self.encode(x)
+        h, z = self.encoder(x)
         return z
     def decode(self, h):
         # TODO: No post_quant_conv
