@@ -458,11 +458,17 @@ class Projection(nn.Module):
     self.lin2 = nn.Linear(n_hidden, n_out, bias=False)
   
   def forward(self, x):
+    print("x0 shape: ", x.shape)
     x = self.flatten(x)
+    print("x1 shape: ", x.shape)
     x = self.lin1(x)
+    print("x2 shape: ", x.shape)
     x = self.bn(x)
+    print("x3 shape: ", x.shape)
     x = self.relu(x)
+    print("x4 shape: ", x.shape)
     x = self.lin2(x)
+    print("x5 shape: ", x.shape)
     return x
 
 class Decoder(nn.Module):
