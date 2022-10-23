@@ -102,7 +102,9 @@ class VQModel(pl.LightningModule):
         print("x shape: in validstep", len(x))
         xrec = self(original_img)
         print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
-        transformed_imgs_encoding = torch.cat([self.encode(x[1]), self.encode(x[2])], dim=0)
+
+        # transformed_imgs_encoding = torch.cat([self.encode(x[1]), self.encode(x[2])], dim=0)
+        transformed_imgs_encoding = self.encode(torch.cat([x[1], x[2]], dim=0))
 
         
         print("transformed_imgs_encoding shape: in trainstep", transformed_imgs_encoding.shape)
@@ -131,7 +133,8 @@ class VQModel(pl.LightningModule):
         print("x shape: in validstep", len(x))
         print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
         xrec = self(original_img)
-        transformed_imgs_encoding = torch.cat([self.encode(x[1]), self.encode(x[2])], dim=0)
+        # transformed_imgs_encoding = torch.cat([self.encode(x[1]), self.encode(x[2])], dim=0)
+        transformed_imgs_encoding = self.encode(torch.cat([x[1], x[2]], dim=0))
 
         aeloss, log_dict_ae = self.loss(original_img, xrec, 0, self.global_step,
                                             last_layer=self.get_last_layer(), split="val", device = self.device,
