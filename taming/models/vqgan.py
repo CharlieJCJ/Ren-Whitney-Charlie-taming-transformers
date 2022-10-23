@@ -105,9 +105,10 @@ class VQModel(pl.LightningModule):
         xrec = self(original_img)
         print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
 
-        transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim=0)
+        # transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim=0)
+        transformed_imgs_encoding = self.encoder_projection(torch.cat([x[1], x[2]], dim=0))
         print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)
-        # transformed_imgs_encoding = self.encode(torch.cat([x[1], x[2]], dim=0))
+
         # print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)
         
         print("transformed_imgs_encoding shape: in trainstep", transformed_imgs_encoding.shape)
@@ -137,9 +138,9 @@ class VQModel(pl.LightningModule):
         print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
         xrec = self(original_img)
         # transformed_imgs_encoding = torch.cat([self.encode(x[1]), self.encode(x[2])], dim=0)
-        transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim=0)
+        transformed_imgs_encoding = self.encoder_projection(torch.cat([x[1], x[2]], dim=0))
+        # transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim=0)
         print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)
-
         aeloss, log_dict_ae = self.loss(original_img, xrec, 0, self.global_step,
                                             last_layer=self.get_last_layer(), split="val", device = self.device,
                                             transformed_imgs_encoding = transformed_imgs_encoding)
