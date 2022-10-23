@@ -401,7 +401,7 @@ class Encoder(nn.Module):
                                         kernel_size=3,
                                         stride=1,
                                         padding=1)
-        self.projection = Projection(256, 512,
+        self.projection = Projection(256 * 16 * 16, 512,
                                  128, False)
 
     def forward(self, x):
@@ -449,6 +449,7 @@ class Projection(nn.Module):
                use_bn: bool = True):
     super().__init__()
     
+    self.flatten = nn.Flatten()
     # No point in using bias if we've batch norm
     self.lin1 = nn.Linear(n_in, n_hidden, bias=not use_bn)
     self.bn = nn.BatchNorm1d(n_hidden) if use_bn else nn.Identity()
@@ -457,6 +458,7 @@ class Projection(nn.Module):
     self.lin2 = nn.Linear(n_hidden, n_out, bias=False)
   
   def forward(self, x):
+    x = self.flatten(x)
     x = self.lin1(x)
     x = self.bn(x)
     x = self.relu(x)
