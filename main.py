@@ -439,7 +439,7 @@ if __name__ == "__main__":
         trainer_config["distributed_backend"] = "ddp"
 
         if not "gpus" in trainer_config:
-            trainer_config["gpus"] = "0,1" # default to 2 gpus
+            trainer_config["gpus"] = "0"
 
         for k in nondefault_trainer_args(opt):
             trainer_config[k] = getattr(opt, k)
