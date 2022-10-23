@@ -401,7 +401,8 @@ class Encoder(nn.Module):
                                         kernel_size=3,
                                         stride=1,
                                         padding=1)
-
+        self.projection = Projection(256, 512,
+                                 128, False)
 
     def forward(self, x):
         #assert x.shape[2] == x.shape[3] == self.resolution, "{}, {}, {}".format(x.shape[2], x.shape[3], self.resolution)
@@ -430,8 +431,35 @@ class Encoder(nn.Module):
         h = self.norm_out(h)
         h = nonlinearity(h)
         h = self.conv_out(h)
+        print("final h shape: ", h.shape)
         return h
 
+class Projection(nn.Module):
+  """
+  Creates projection head
+  Args:
+    n_in (int): Number of input features
+    n_hidden (int): Number of hidden features
+    n_out (int): Number of output features
+    use_bn (bool): Whether to use batch norm
+  """
+  def __init__(self, n_in: int, n_hidden: int, n_out: int,
+               use_bn: bool = True):
+    super().__init__()
+    
+    # No point in using bias if we've batch norm
+    self.lin1 = nn.Linear(n_in, n_hidden, bias=not use_bn)
+    self.bn = nn.BatchNorm1d(n_hidden) if use_bn else nn.Identity()
+    self.relu = nn.ReLU()
+    # No bias for the final linear layer
+    self.lin2 = nn.Linear(n_hidden, n_out, bias=False)
+  
+  def forward(self, x):
+    x = self.lin1(x)
+    x = self.bn(x)
+    x = self.relu(x)
+    x = self.lin2(x)
+    return x
 
 class Decoder(nn.Module):
     def __init__(self, *, ch, out_ch, ch_mult=(1,2,4,8), num_res_blocks,
