@@ -433,6 +433,7 @@ class Encoder(nn.Module):
         h = self.conv_out(h)
         print("final h shape: ", h.shape)
         z = self.projection(h)
+        print("final z shape: ", z.shape)
         return h, z
 
 class Projection(nn.Module):
