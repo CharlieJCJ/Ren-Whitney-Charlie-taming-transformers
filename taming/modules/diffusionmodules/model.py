@@ -431,9 +431,9 @@ class Encoder(nn.Module):
         h = self.norm_out(h)
         h = nonlinearity(h)
         h = self.conv_out(h)
-        print("final h shape: ", h.shape)
+        # print("final h shape: ", h.shape)
         z = self.projection(h)
-        print("final z shape: ", z.shape)
+        # print("final z shape: ", z.shape)
         return h, z
 
 class Projection(nn.Module):
@@ -458,17 +458,17 @@ class Projection(nn.Module):
     self.lin2 = nn.Linear(n_hidden, n_out, bias=False)
   
   def forward(self, x):
-    print("x0 shape: ", x.shape)
+    # print("x0 shape: ", x.shape
     x = self.flatten(x)
-    print("x1 shape: ", x.shape)
+    # print("x1 shape: ", x.shape)
     x = self.lin1(x)
-    print("x2 shape: ", x.shape)
+    # print("x2 shape: ", x.shape)
     x = self.bn(x)
-    print("x3 shape: ", x.shape)
+    # print("x3 shape: ", x.shape)
     x = self.relu(x)
-    print("x4 shape: ", x.shape)
+    # print("x4 shape: ", x.shape)
     x = self.lin2(x)
-    print("x5 shape: ", x.shape)
+    # print("x5 shape: ", x.shape)
     return x
 
 class Decoder(nn.Module):

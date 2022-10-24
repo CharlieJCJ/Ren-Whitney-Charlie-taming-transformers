@@ -32,7 +32,7 @@ def vanilla_d_loss(logits_real, logits_fake):
     return d_loss
 def info_nce_loss(features, device, bs = 1):
     # features = features.reshape((features.shape[0], features.shape[1]))
-    print("feature.shape", features.shape)
+    # print("feature.shape", features.shape)
     labels = torch.cat([torch.arange(bs) for i in range(2)], dim=0) # FIXME (batchsize need to be parameterized)
                                                                    # torch.arange(BATCH) for i in range(NVIEWS)
     labels = (labels.unsqueeze(0) == labels.unsqueeze(1)).float()
@@ -145,8 +145,8 @@ class VQLPIPSWithDiscriminator(nn.Module):
                 logits, labels = info_nce_loss(transformed_imgs_encoding, device, batch_size)
                 constrastive_loss = criterionSimCLR(logits, labels)
 
-            print("constrastive_loss", constrastive_loss)
-            loss = nll_loss + d_weight * disc_factor * g_loss + constrastive_loss
+            print("constrastive_loss", constrastive_loss, "g_loss", g_loss, "d_weight", d_weight, "disc_factor")
+            loss = nll_loss + d_weight * disc_factor * g_loss + 0.5 * constrastive_loss 
 
             # TODO: Add contrastive loss logs
             log = {"{}/total_loss".format(split): loss.clone().detach().mean(),
