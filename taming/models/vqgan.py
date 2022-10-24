@@ -88,7 +88,7 @@ class VQModel(pl.LightningModule):
         # Now x is a tuple of (image, trans1, trans2)
         # TODO: break the tuple into image, trans1, trans2
         x, trans1, trans2 = batch[k]
-        print("x shape: in get_input", x.shape, "trans1 shape: in get_input", trans1.shape, "trans2 shape", trans2.shape)
+        # print("x shape: in get_input", x.shape, "trans1 shape: in get_input", trans1.shape, "trans2 shape", trans2.shape)
         # Ignore it for now
         if len(x.shape) == 3:
             x = x[..., None]
@@ -101,17 +101,17 @@ class VQModel(pl.LightningModule):
         # Now get_input returns a tuple of (image, trans1, trans2)
         x = self.get_input(batch, self.image_key)
         original_img = x[0]
-        print("x shape: in validstep", len(x))
+        # print("x shape: in validstep", len(x))
         xrec = self(original_img)
-        print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
+        # print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
 
         # transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim=0)
         transformed_imgs_encoding = self.encoder_projection(torch.cat([x[1], x[2]], dim=0))
-        print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)
+        # print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)
 
         # print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)
         
-        print("transformed_imgs_encoding shape: in trainstep", transformed_imgs_encoding.shape)
+        # print("transformed_imgs_encoding shape: in trainstep", transformed_imgs_encoding.shape)
         if optimizer_idx == 0:
             # autoencode
             aeloss, log_dict_ae = self.loss(original_img, xrec, optimizer_idx, self.global_step,
@@ -134,13 +134,13 @@ class VQModel(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         x = self.get_input(batch, self.image_key)
         original_img = x[0]
-        print("x shape: in validstep", len(x))
-        print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
+        # print("x shape: in validstep", len(x))
+        # print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
         xrec = self(original_img)
         # transformed_imgs_encoding = torch.cat([self.encode(x[1]), self.encode(x[2])], dim=0)
         transformed_imgs_encoding = self.encoder_projection(torch.cat([x[1], x[2]], dim=0))
         # transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim=0)
-        print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)
+        # print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)
         aeloss, log_dict_ae = self.loss(original_img, xrec, 0, self.global_step,
                                             last_layer=self.get_last_layer(), split="val", device = self.device,
                                             transformed_imgs_encoding = transformed_imgs_encoding, batch_size = self.bs)
