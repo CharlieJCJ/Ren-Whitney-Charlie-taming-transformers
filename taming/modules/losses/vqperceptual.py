@@ -33,7 +33,7 @@ def vanilla_d_loss(logits_real, logits_fake):
 def info_nce_loss(features, device):
     # features = features.reshape((features.shape[0], features.shape[1]))
     print("feature.shape", features.shape)
-    labels = torch.cat([torch.arange(1) for i in range(1)], dim=0) # FIXME (batchsize need to be parameterized)
+    labels = torch.cat([torch.arange(1) for i in range(2)], dim=0) # FIXME (batchsize need to be parameterized)
     labels = (labels.unsqueeze(0) == labels.unsqueeze(1)).float()
     labels = labels.to(device)
 
