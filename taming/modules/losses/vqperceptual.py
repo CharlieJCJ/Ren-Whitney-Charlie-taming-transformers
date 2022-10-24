@@ -106,7 +106,7 @@ class VQLPIPSWithDiscriminator(nn.Module):
         return d_weight
 
     def forward(self, inputs, reconstructions, optimizer_idx,
-                global_step, last_layer=None, cond=None, split="train", device = "cuda", transformed_imgs_encoding=None):
+                global_step, last_layer=None, cond=None, split="train", device = "cuda", transformed_imgs_encoding=None, batch_size=1):
         # x is the input image, trans1 is simclr transformed image, trans2 is the other simclr transformed image -> calculate loss.
         rec_loss = torch.abs(inputs.contiguous() - reconstructions.contiguous())
         if self.perceptual_weight > 0:
@@ -142,7 +142,7 @@ class VQLPIPSWithDiscriminator(nn.Module):
             
             with autocast(enabled=True):
                 # use forward
-                logits, labels = info_nce_loss(transformed_imgs_encoding, device)
+                logits, labels = info_nce_loss(transformed_imgs_encoding, device, batch_size)
                 constrastive_loss = criterionSimCLR(logits, labels)
 
             print("constrastive_loss", constrastive_loss)

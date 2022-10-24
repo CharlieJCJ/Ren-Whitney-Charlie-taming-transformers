@@ -126,7 +126,7 @@ class VQModel(pl.LightningModule):
             # discriminator
             discloss, log_dict_disc = self.loss(original_img, xrec, optimizer_idx, self.global_step,
                                             last_layer=self.get_last_layer(), split="train", device = self.device,
-                                            transformed_imgs_encoding = transformed_imgs_encoding)
+                                            transformed_imgs_encoding = transformed_imgs_encoding, batch_size = self.bs)
             self.log("train/discloss", discloss, prog_bar=True, logger=True, on_step=True, on_epoch=True)
             self.log_dict(log_dict_disc, prog_bar=False, logger=True, on_step=True, on_epoch=True)
             return discloss
