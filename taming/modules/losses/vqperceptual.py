@@ -30,10 +30,11 @@ def vanilla_d_loss(logits_real, logits_fake):
         torch.mean(torch.nn.functional.softplus(-logits_real)) +
         torch.mean(torch.nn.functional.softplus(logits_fake)))
     return d_loss
-def info_nce_loss(features, device):
+def info_nce_loss(features, device, bs = 1):
     # features = features.reshape((features.shape[0], features.shape[1]))
     print("feature.shape", features.shape)
-    labels = torch.cat([torch.arange(1) for i in range(2)], dim=0) # FIXME (batchsize need to be parameterized)
+    labels = torch.cat([torch.arange(bs) for i in range(2)], dim=0) # FIXME (batchsize need to be parameterized)
+                                                                   # torch.arange(BATCH) for i in range(NVIEWS)
     labels = (labels.unsqueeze(0) == labels.unsqueeze(1)).float()
     labels = labels.to(device)
 

@@ -116,7 +116,7 @@ class VQModel(pl.LightningModule):
             # autoencode
             aeloss, log_dict_ae = self.loss(original_img, xrec, optimizer_idx, self.global_step,
                                             last_layer=self.get_last_layer(), split="train", device = self.device,
-                                            transformed_imgs_encoding = transformed_imgs_encoding)
+                                            transformed_imgs_encoding = transformed_imgs_encoding, batch_size = self.bs)
 
             self.log("train/aeloss", aeloss, prog_bar=True, logger=True, on_step=True, on_epoch=True)
             self.log_dict(log_dict_ae, prog_bar=False, logger=True, on_step=True, on_epoch=True)
@@ -143,11 +143,11 @@ class VQModel(pl.LightningModule):
         print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)
         aeloss, log_dict_ae = self.loss(original_img, xrec, 0, self.global_step,
                                             last_layer=self.get_last_layer(), split="val", device = self.device,
-                                            transformed_imgs_encoding = transformed_imgs_encoding)
+                                            transformed_imgs_encoding = transformed_imgs_encoding, batch_size = self.bs)
 
         discloss, log_dict_disc = self.loss(original_img, xrec, 1, self.global_step,
                                             last_layer=self.get_last_layer(), split="val", device = self.device,
-                                            transformed_imgs_encoding = transformed_imgs_encoding)
+                                            transformed_imgs_encoding = transformed_imgs_encoding, batch_size = self.bs)
         rec_loss = log_dict_ae["val/rec_loss"]
         self.log("val/rec_loss", rec_loss,
                    prog_bar=True, logger=True, on_step=True, on_epoch=True, sync_dist=True)
