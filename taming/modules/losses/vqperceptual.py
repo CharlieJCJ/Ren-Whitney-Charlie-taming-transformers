@@ -146,7 +146,7 @@ class VQLPIPSWithDiscriminator(nn.Module):
                 constrastive_loss = criterionSimCLR(logits, labels)
 
             print("constrastive_loss", constrastive_loss, "g_loss", g_loss, "d_weight", d_weight, "disc_factor")
-            loss = nll_loss + d_weight * disc_factor * g_loss + 0.5 * constrastive_loss 
+            loss = nll_loss + d_weight * disc_factor * g_loss + 0.1 * constrastive_loss 
 
             # TODO: Add contrastive loss logs
             log = {"{}/total_loss".format(split): loss.clone().detach().mean(),
