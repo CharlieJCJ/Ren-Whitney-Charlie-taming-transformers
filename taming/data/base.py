@@ -78,9 +78,9 @@ class ImagePaths(Dataset):
         image = (image/127.5 - 1.0).astype(np.float32)
         [view1, view2] = [view.numpy().astype(np.float32) for view in [view1, view2]]
         # [view1, view2] = [(view.numpy()/127.5 - 1.0).astype(np.float32) for view in [view1, view2]]
-        print("image shape: ", image.shape, image)
-        print("view1 shape: ", view1.shape, view1)
-        print("view2 shape: ", view2.shape, view2)
+        # print("image shape: ", image.shape, image)
+        # print("view1 shape: ", view1.shape, view1)
+        # print("view2 shape: ", view2.shape, view2)
         return (image, view1, view2)
     
 
