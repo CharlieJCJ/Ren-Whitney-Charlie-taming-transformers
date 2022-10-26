@@ -401,8 +401,8 @@ class Encoder(nn.Module):
                                         kernel_size=3,
                                         stride=1,
                                         padding=1)
-        self.projection = Projection(128 * 16 * 16, 512,
-                                 128, False)
+        self.projection = Projection(128 * 8 * 8, 512,
+                                 128, False) # 256 * 16 * 16
 
     def forward(self, x):
         #assert x.shape[2] == x.shape[3] == self.resolution, "{}, {}, {}".format(x.shape[2], x.shape[3], self.resolution)
