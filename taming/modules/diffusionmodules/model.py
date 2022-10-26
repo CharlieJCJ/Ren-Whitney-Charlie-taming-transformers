@@ -401,7 +401,7 @@ class Encoder(nn.Module):
                                         kernel_size=3,
                                         stride=1,
                                         padding=1)
-        self.projection = Projection(128 * 8 * 8, 512,
+        self.projection = Projection(256 * 8 * 8, 512,
                                  128, False) # 256 * 16 * 16
 
     def forward(self, x):
