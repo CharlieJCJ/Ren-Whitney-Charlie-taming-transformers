@@ -9,7 +9,7 @@ from taming.modules.diffusionmodules.model import Encoder, Decoder
 from taming.modules.vqvae.quantize import VectorQuantizer2 as VectorQuantizer
 from taming.modules.vqvae.quantize import GumbelQuantize
 from taming.modules.vqvae.quantize import EMAVectorQuantizer
-
+import numpy as np
 # TODO Edited out the quantized modules (we don't need them)
 class VQModel(pl.LightningModule):
     def __init__(self,
@@ -103,7 +103,7 @@ class VQModel(pl.LightningModule):
         x = self.get_input(batch, self.image_key)
         original_img = x[0]
         
-        print("x shape: in validstep", len(x))
+        print("x shape: in validstep", np.array(x[0]).shape)
         xrec = self(original_img)
         # print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
 
