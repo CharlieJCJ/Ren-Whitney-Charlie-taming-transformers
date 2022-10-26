@@ -95,7 +95,7 @@ class VQModel(pl.LightningModule):
         x = x.permute(0, 3, 1, 2).to(memory_format=torch.contiguous_format)
         [trans1, trans2] = [t.permute(0, 1, 2, 3).to(memory_format=torch.contiguous_format) 
                                                     for t in [trans1, trans2]]
-        print("trans1", trans1[0])
+        print("trans1 in vqgan", trans1[0])
         return x.float(), trans1.float(), trans2.float()
 
     def training_step(self, batch, batch_idx, optimizer_idx):
