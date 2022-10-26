@@ -103,7 +103,7 @@ class VQModel(pl.LightningModule):
         x = self.get_input(batch, self.image_key)
         original_img = x[0]
         
-        print("x shape: in validstep", np.array(x[0]).shape)
+        print("x shape: in validstep", np.array(x[0].cpu()).shape)
         xrec = self(original_img)
         # print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
 
