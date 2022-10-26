@@ -109,8 +109,9 @@ class VQModel(pl.LightningModule):
         # transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim=0)
         print("Encoding 1: ", self.encoder_projection(x[1]))
         print("Encoding 2: ", self.encoder_projection(x[2]))
-        # transformed_imgs_encoding = self.encoder_projection(torch.cat([x[1], x[2]], dim=0))
-        transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim = 0)
+        print("Combined Encoding: ", self.encoder_projection(torch.cat([x[1], x[2]], dim=0)))
+        transformed_imgs_encoding = self.encoder_projection(torch.cat([x[1], x[2]], dim=0))
+        # transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim = 0)
         # print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)
 
         # print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)
@@ -142,8 +143,8 @@ class VQModel(pl.LightningModule):
         # print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
         xrec = self(original_img)
         # transformed_imgs_encoding = torch.cat([self.encode(x[1]), self.encode(x[2])], dim=0)
-        # transformed_imgs_encoding = self.encoder_projection(torch.cat([x[1], x[2]], dim=0))
-        transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim = 0)
+        transformed_imgs_encoding = self.encoder_projection(torch.cat([x[1], x[2]], dim=0))
+        # transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim = 0)
 
         # transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim=0)
         # print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)
