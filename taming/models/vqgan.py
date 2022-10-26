@@ -102,8 +102,9 @@ class VQModel(pl.LightningModule):
         # Now get_input returns a tuple of (image, trans1, trans2)
         x = self.get_input(batch, self.image_key)
         original_img = x[0]
-        
-        print("x shape: in validstep", np.array(x[0].cpu()).shape)
+        if np.array(original_img.cpu()).shape[0] != self.bs:
+            return
+        # print("x shape: in validstep", np.array(x[0].cpu()).shape)
         xrec = self(original_img)
         # print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
 
@@ -140,7 +141,9 @@ class VQModel(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         x = self.get_input(batch, self.image_key)
         original_img = x[0]
-        print("x shape: in validstep", len(x))
+        # print("x shape: in validstep", len(x))
+        if np.array(original_img.cpu()).shape[0] != self.bs:
+            return
         # print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
         xrec = self(original_img)
         # transformed_imgs_encoding = torch.cat([self.encode(x[1]), self.encode(x[2])], dim=0)
