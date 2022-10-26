@@ -95,7 +95,7 @@ class VQModel(pl.LightningModule):
         x = x.permute(0, 3, 1, 2).to(memory_format=torch.contiguous_format)
         [trans1, trans2] = [t.permute(0, 1, 2, 3).to(memory_format=torch.contiguous_format) 
                                                     for t in [trans1, trans2]]
-        print("trans1 in vqgan", trans1[0])
+        # print("trans1 in vqgan", trans1[0])
         return x.float(), trans1.float(), trans2.float()
 
     def training_step(self, batch, batch_idx, optimizer_idx):
@@ -107,9 +107,9 @@ class VQModel(pl.LightningModule):
         # print("x[0]", x[0].shape, "x[1]", x[1].shape, "x[2]", x[2].shape)
 
         # transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim=0)
-        print("Encoding 1: ", self.encoder_projection(x[1]))
-        print("Encoding 2: ", self.encoder_projection(x[2]))
-        print("Combined Encoding: ", self.encoder_projection(torch.cat([x[1], x[2]], dim=0)))
+        # print("Encoding 1: ", self.encoder_projection(x[1]))
+        # print("Encoding 2: ", self.encoder_projection(x[2]))
+        # print("Combined Encoding: ", self.encoder_projection(torch.cat([x[1], x[2]], dim=0)))
         transformed_imgs_encoding = self.encoder_projection(torch.cat([x[1], x[2]], dim=0))
         # transformed_imgs_encoding = torch.cat([self.encoder_projection(x[1]), self.encoder_projection(x[2])], dim = 0)
         # print("transformed_imgs_encoding shape", transformed_imgs_encoding.shape)

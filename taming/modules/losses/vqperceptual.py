@@ -143,7 +143,7 @@ class VQLPIPSWithDiscriminator(nn.Module):
             with autocast(enabled=True):
                 # use forward
                 logits, labels = info_nce_loss(transformed_imgs_encoding, device, batch_size)
-                print("logits, labels", logits, labels)
+                # print("logits, labels", logits, labels)
                 constrastive_loss = criterionSimCLR(logits, labels)
 
             print("constrastive_loss", constrastive_loss, "g_loss", g_loss, "d_weight", d_weight, "disc_factor")

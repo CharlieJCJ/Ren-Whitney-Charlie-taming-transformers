@@ -431,7 +431,7 @@ class Encoder(nn.Module):
         h = self.norm_out(h)
         h = nonlinearity(h)
         h = self.conv_out(h)
-        print("final h shape: ", h.shape)
+        # print("final h shape: ", h.shape)
         z = self.projection(h)
         # print("final z shape: ", z.shape)
         return h, z
